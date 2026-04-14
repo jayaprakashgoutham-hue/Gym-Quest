@@ -1,0 +1,47 @@
+WORKOUTS TAB
+	•	Grouped workout routines (e.g. “5 Day Split”)
+	•	Each workout shows: name, last completed date, next workout summary (exercises/sets/reps count)
+	•	Quick Go button to start any workout instantly
+	•	Add new workout routine with custom exercises
+	•	When logging a workout: show each exercise with sets/reps/weight input, rest timer between sets, workout duration timer running live
+EXERCISES TAB
+	•	Full searchable exercise library (pre-load 50+ common exercises)
+	•	Each exercise has: name, focus (Reps+Weight / Time / Distance), equipment type, muscle category
+	•	Filter by category/equipment
+	•	Add custom exercises
+LOGS TAB
+	•	Calendar view showing workout days marked with colored dots
+	•	Tap a date to see: workout name, duration, exercises completed, total training volume (sets × reps × weight)
+STATS TAB
+	•	Training Volume over time (line chart)
+	•	Workout frequency (bar chart)
+	•	Per-exercise progress: weight lifted over time, reps over time
+	•	Body weight tracker (log daily weight, show trend)
+	•	Categories breakdown (pie chart of muscle groups trained)
+PROFILE / ACHIEVEMENTS TAB
+	•	XP bar and level (earn XP per workout completed)
+	•	Streak counter (consecutive workout days)
+	•	Badges/achievements system:
+	•	“First Rep” - log first workout
+	•	“Consistent” - 7 day streak
+	•	“Centurion” - 100 workouts logged
+	•	“Heavy Lifter” - bench press reaches 100kg
+	•	“Volume King” - training volume exceeds 10,000 in one session
+	•	Show locked badges as greyed out with target
+	•	Personal records tracker (auto-detects new PRs and celebrates with animation)
+SETTINGS (accessible from profile)
+	•	Rest timer: configurable duration, sound on/off
+	•	Default sets/reps
+	•	Weight units: kg or lbs
+	•	Intensity tracking: RPE scale toggle
+	•	1RM calculator tool
+	•	Plate calculator tool
+DESIGN RULES
+	•	Background: #0a0a0a (pure black)
+	•	Cards: #141414 with subtle border glow
+	•	Accent colors: #a855f7 (purple), #06b6d4 (cyan), #f43f5e (pink), #84cc16 (lime)
+	•	Neon glow effects on active elements
+	•	Smooth animations on badge unlock and PR alerts
+	•	All data saved in browser localStorage
+	•	Fully mobile responsive, designed for phone screen first
+Start with a working version of all 5 tabs with sample data pre-loaded so I can test immediately.
