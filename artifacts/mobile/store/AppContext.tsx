@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { sampleExercises, sampleWorkouts, sampleLogs, defaultProfile } from "./sampleData";
+import { sampleExercises, sampleWorkouts, sampleLogs, defaultProfile, defaultAchievements } from "./sampleData";
 import type { Exercise, Workout, WorkoutLog, UserProfile, AppState, Settings, LoggedExercise } from "./types";
 
 interface AppContextType {
@@ -18,6 +18,7 @@ interface AppContextType {
   addBodyWeight: (weight: number) => void;
   getExerciseById: (id: string) => Exercise | undefined;
   checkAndUnlockAchievements: (log: WorkoutLog) => string[];
+  resetData: () => void;
   loaded: boolean;
 }
 
@@ -181,13 +182,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return unlocked;
   }, []);
 
+  const resetData = useCallback(() => {
+    setWorkouts([]);
+    setLogs([]);
+    setProfile((prev) => ({
+      xp: 0,
+      level: 1,
+      streak: 0,
+      lastWorkoutDate: undefined,
+      totalWorkouts: 0,
+      achievements: defaultAchievements.map((a) => ({ ...a, unlocked: false, unlockedDate: undefined })),
+      bodyWeight: [],
+      personalRecords: {},
+      weightUnit: prev.weightUnit,
+      restTimerDuration: prev.restTimerDuration,
+      restTimerSound: prev.restTimerSound,
+      defaultSets: prev.defaultSets,
+      defaultReps: prev.defaultReps,
+      rpeEnabled: prev.rpeEnabled,
+    }));
+  }, []);
+
   return (
     <AppContext.Provider
       value={{
         exercises, workouts, logs, profile,
         addExercise, addWorkout, updateWorkout, deleteWorkout,
         addLog, updateProfile, updateSettings, addBodyWeight,
-        getExerciseById, checkAndUnlockAchievements, loaded,
+        getExerciseById, checkAndUnlockAchievements, resetData, loaded,
       }}
     >
       {children}

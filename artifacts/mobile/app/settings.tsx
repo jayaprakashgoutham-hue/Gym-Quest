@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, Switch, TextInput,
-  TouchableOpacity, Platform, Modal,
+  TouchableOpacity, Platform, Modal, Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,7 +15,7 @@ export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { profile, updateSettings } = useApp();
+  const { profile, updateSettings, resetData } = useApp();
 
   const [weightUnit, setWeightUnit] = useState<"kg" | "lbs">(profile.weightUnit);
   const [restTimer, setRestTimer] = useState(profile.restTimerDuration.toString());
@@ -39,6 +39,27 @@ export default function SettingsScreen() {
       rpeEnabled,
     });
     router.back();
+  };
+
+  const handleReset = () => {
+    const doReset = () => {
+      resetData();
+      router.back();
+    };
+    if (Platform.OS === "web") {
+      if (typeof window !== "undefined" && window.confirm("Reset all data?\n\nThis will erase all workouts, logs, achievements, body weight history, and reset your XP, level, and streak. Your settings (units, rest timer, etc.) will be kept.\n\nThis cannot be undone.")) {
+        doReset();
+      }
+    } else {
+      Alert.alert(
+        "Reset all data?",
+        "This will erase all workouts, logs, achievements, body weight history, and reset your XP, level, and streak. Your settings (units, rest timer, etc.) will be kept.\n\nThis cannot be undone.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Reset", style: "destructive", onPress: doReset },
+        ],
+      );
+    }
   };
 
   const calc1RM = () => {
@@ -180,6 +201,20 @@ export default function SettingsScreen() {
 
         <NeonButton title="Save Settings" onPress={handleSave} color={colors.purple} style={{ marginTop: 8 }} />
 
+        <GlowCard glowColor={colors.pink} style={{ marginTop: 16 }}>
+          <Text style={[styles.sectionTitle, { color: colors.pink }]}>Danger Zone</Text>
+          <Text style={[styles.dangerHint, { color: colors.mutedForeground }]}>
+            Wipe all sample data and start with a clean slate. Settings will be kept.
+          </Text>
+          <TouchableOpacity
+            style={[styles.dangerBtn, { borderColor: colors.pink }]}
+            onPress={handleReset}
+          >
+            <Feather name="trash-2" size={16} color={colors.pink} />
+            <Text style={[styles.dangerBtnText, { color: colors.pink }]}>Reset All Data</Text>
+          </TouchableOpacity>
+        </GlowCard>
+
         <View style={{ height: 60 }} />
       </ScrollView>
 
@@ -298,4 +333,15 @@ const styles = StyleSheet.create({
   plateResult: { marginBottom: 16 },
   plateTitle: { fontSize: 14, fontFamily: "Inter_600SemiBold", marginBottom: 6 },
   plateRow: { fontSize: 15, fontFamily: "Inter_500Medium", marginBottom: 4 },
+  dangerHint: { fontSize: 13, fontFamily: "Inter_400Regular", marginBottom: 12, lineHeight: 18 },
+  dangerBtn: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 8,
+  },
+  dangerBtnText: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
 });
