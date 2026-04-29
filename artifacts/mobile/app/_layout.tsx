@@ -31,6 +31,9 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="active-workout" options={{ headerShown: false, presentation: "fullScreenModal" }} />
       <Stack.Screen name="settings" options={{ headerShown: false, presentation: "modal" }} />
+      <Stack.Screen name="exercise/[id]" options={{ headerShown: false, presentation: "modal" }} />
+      <Stack.Screen name="workout/[id]" options={{ headerShown: false, presentation: "modal" }} />
+      <Stack.Screen name="log/[id]" options={{ headerShown: false, presentation: "modal" }} />
     </Stack>
   );
 }

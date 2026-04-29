@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/store/AppContext";
 import { GlowCard } from "@/components/GlowCard";
@@ -24,7 +25,8 @@ const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 export default function LogsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { logs, exercises, profile } = useApp();
+  const router = useRouter();
+  const { logs, exercises } = useApp();
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -158,41 +160,56 @@ export default function LogsScreen() {
               </Text>
             ) : (
               selectedLogs.map((log) => (
-                <GlowCard key={log.id} glowColor={colors.pink}>
-                  <Text style={[styles.logWorkoutName, { color: colors.foreground }]}>
-                    {log.workoutName}
-                  </Text>
-                  <View style={styles.logMeta}>
-                    <View style={styles.logStat}>
-                      <Feather name="clock" size={14} color={colors.cyan} />
-                      <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
-                        {log.duration} min
+                <TouchableOpacity
+                  key={log.id}
+                  onPress={() => router.push({ pathname: "/log/[id]", params: { id: log.id } })}
+                  activeOpacity={0.8}
+                >
+                  <GlowCard glowColor={colors.pink}>
+                    <View style={styles.logTitleRow}>
+                      <Text style={[styles.logWorkoutName, { color: colors.foreground }]}>
+                        {log.workoutName}
+                      </Text>
+                      <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
+                    </View>
+                    <View style={styles.logMeta}>
+                      <View style={styles.logStat}>
+                        <Feather name="clock" size={14} color={colors.cyan} />
+                        <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
+                          {log.duration} min
+                        </Text>
+                      </View>
+                      <View style={styles.logStat}>
+                        <Feather name="activity" size={14} color={colors.lime} />
+                        <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
+                          {log.exercises.length} exercises
+                        </Text>
+                      </View>
+                      <View style={styles.logStat}>
+                        <Feather name="bar-chart-2" size={14} color={colors.pink} />
+                        <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
+                          {calcVolume(log).toLocaleString()} vol
+                        </Text>
+                      </View>
+                    </View>
+                    {log.exercises.map((ex, idx) => (
+                      <View key={idx} style={styles.logExercise}>
+                        <Text style={[styles.logExName, { color: colors.foreground }]}>
+                          {getExName(ex.exerciseId)}
+                        </Text>
+                        <Text style={[styles.logExDetail, { color: colors.mutedForeground }]}>
+                          {ex.sets.filter((s) => s.completed).length} sets completed
+                        </Text>
+                      </View>
+                    ))}
+                    <View style={styles.editHint}>
+                      <Feather name="edit-2" size={11} color={colors.mutedForeground} />
+                      <Text style={[styles.editHintText, { color: colors.mutedForeground }]}>
+                        Tap to edit or delete
                       </Text>
                     </View>
-                    <View style={styles.logStat}>
-                      <Feather name="activity" size={14} color={colors.lime} />
-                      <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
-                        {log.exercises.length} exercises
-                      </Text>
-                    </View>
-                    <View style={styles.logStat}>
-                      <Feather name="bar-chart-2" size={14} color={colors.pink} />
-                      <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
-                        {calcVolume(log).toLocaleString()} vol
-                      </Text>
-                    </View>
-                  </View>
-                  {log.exercises.map((ex, idx) => (
-                    <View key={idx} style={styles.logExercise}>
-                      <Text style={[styles.logExName, { color: colors.foreground }]}>
-                        {getExName(ex.exerciseId)}
-                      </Text>
-                      <Text style={[styles.logExDetail, { color: colors.mutedForeground }]}>
-                        {ex.sets.filter((s) => s.completed).length} sets completed
-                      </Text>
-                    </View>
-                  ))}
-                </GlowCard>
+                  </GlowCard>
+                </TouchableOpacity>
               ))
             )}
           </View>
@@ -232,7 +249,10 @@ const styles = StyleSheet.create({
   selectedSection: { marginTop: 16 },
   selectedDateText: { fontSize: 16, fontFamily: "Inter_600SemiBold", marginBottom: 12 },
   noLogs: { fontSize: 14, fontFamily: "Inter_400Regular" },
-  logWorkoutName: { fontSize: 18, fontFamily: "Inter_600SemiBold", marginBottom: 8 },
+  logTitleRow: { flexDirection: "row" as const, justifyContent: "space-between" as const, alignItems: "center" as const, marginBottom: 8 },
+  logWorkoutName: { fontSize: 18, fontFamily: "Inter_600SemiBold", flex: 1 },
+  editHint: { flexDirection: "row" as const, alignItems: "center" as const, gap: 4, marginTop: 8, opacity: 0.6 },
+  editHintText: { fontSize: 10, fontFamily: "Inter_400Regular" },
   logMeta: { flexDirection: "row" as const, gap: 16, marginBottom: 12 },
   logStat: { flexDirection: "row" as const, alignItems: "center" as const, gap: 4 },
   logStatText: { fontSize: 13, fontFamily: "Inter_400Regular" },

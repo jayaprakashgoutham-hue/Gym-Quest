@@ -5,11 +5,11 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/store/AppContext";
 import { GlowCard } from "@/components/GlowCard";
 import { NeonButton } from "@/components/NeonButton";
-import type { Exercise } from "@/store/types";
 
 const CATEGORIES = ["All", "Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Cardio"];
 const EQUIPMENT = ["All", "Barbell", "Dumbbell", "Machine", "Cable", "Bodyweight"];
@@ -27,6 +27,7 @@ const categoryColors: Record<string, string> = {
 export default function ExercisesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { exercises, addExercise } = useApp();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -130,24 +131,33 @@ export default function ExercisesScreen() {
         </Text>
 
         {filtered.map((exercise) => (
-          <GlowCard key={exercise.id} glowColor={categoryColors[exercise.category] || colors.purple}>
-            <Text style={[styles.exName, { color: colors.foreground }]}>{exercise.name}</Text>
-            <View style={styles.exMeta}>
-              <View style={[styles.tag, { backgroundColor: (categoryColors[exercise.category] || colors.purple) + "20" }]}>
-                <Text style={[styles.tagText, { color: categoryColors[exercise.category] || colors.purple }]}>
-                  {exercise.category}
-                </Text>
+          <TouchableOpacity
+            key={exercise.id}
+            onPress={() => router.push({ pathname: "/exercise/[id]", params: { id: exercise.id } })}
+            activeOpacity={0.8}
+          >
+            <GlowCard glowColor={categoryColors[exercise.category] || colors.purple}>
+              <View style={styles.exHeaderRow}>
+                <Text style={[styles.exName, { color: colors.foreground }]}>{exercise.name}</Text>
+                <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
               </View>
-              <View style={[styles.tag, { backgroundColor: colors.secondary }]}>
-                <Text style={[styles.tagText, { color: colors.mutedForeground }]}>{exercise.equipment}</Text>
+              <View style={styles.exMeta}>
+                <View style={[styles.tag, { backgroundColor: (categoryColors[exercise.category] || colors.purple) + "20" }]}>
+                  <Text style={[styles.tagText, { color: categoryColors[exercise.category] || colors.purple }]}>
+                    {exercise.category}
+                  </Text>
+                </View>
+                <View style={[styles.tag, { backgroundColor: colors.secondary }]}>
+                  <Text style={[styles.tagText, { color: colors.mutedForeground }]}>{exercise.equipment}</Text>
+                </View>
+                <View style={[styles.tag, { backgroundColor: colors.secondary }]}>
+                  <Text style={[styles.tagText, { color: colors.mutedForeground }]}>
+                    {exercise.focus === "reps_weight" ? "Reps + Weight" : exercise.focus === "time" ? "Time" : "Distance"}
+                  </Text>
+                </View>
               </View>
-              <View style={[styles.tag, { backgroundColor: colors.secondary }]}>
-                <Text style={[styles.tagText, { color: colors.mutedForeground }]}>
-                  {exercise.focus === "reps_weight" ? "Reps + Weight" : exercise.focus === "time" ? "Time" : "Distance"}
-                </Text>
-              </View>
-            </View>
-          </GlowCard>
+            </GlowCard>
+          </TouchableOpacity>
         ))}
 
         <View style={{ height: Platform.OS === "web" ? 34 + 84 : 100 }} />
@@ -243,7 +253,8 @@ const styles = StyleSheet.create({
   },
   filterText: { fontSize: 13, fontFamily: "Inter_500Medium" },
   count: { fontSize: 13, fontFamily: "Inter_400Regular", marginBottom: 12 },
-  exName: { fontSize: 16, fontFamily: "Inter_600SemiBold", marginBottom: 8 },
+  exHeaderRow: { flexDirection: "row" as const, justifyContent: "space-between" as const, alignItems: "center" as const, marginBottom: 8 },
+  exName: { fontSize: 16, fontFamily: "Inter_600SemiBold", flex: 1 },
   exMeta: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 6 },
   tag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
   tagText: { fontSize: 11, fontFamily: "Inter_500Medium" },

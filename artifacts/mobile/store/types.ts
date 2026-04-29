@@ -1,9 +1,31 @@
+export type MovementPattern =
+  | "horizontal_push"
+  | "vertical_push"
+  | "horizontal_pull"
+  | "vertical_pull"
+  | "squat"
+  | "hinge"
+  | "lunge"
+  | "isolation_curl"
+  | "isolation_extension"
+  | "isolation_raise"
+  | "core"
+  | "carry"
+  | "static"
+  | "cardio";
+
 export interface Exercise {
   id: string;
   name: string;
   focus: "reps_weight" | "time" | "distance";
   equipment: string;
   category: string;
+  description?: string;
+  instructions?: string[];
+  tips?: string[];
+  primaryMuscles?: string[];
+  secondaryMuscles?: string[];
+  movementPattern?: MovementPattern;
 }
 
 export interface WorkoutExercise {

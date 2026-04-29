@@ -13,6 +13,8 @@ interface AppContextType {
   updateWorkout: (workout: Workout) => void;
   deleteWorkout: (id: string) => void;
   addLog: (log: WorkoutLog) => void;
+  updateLog: (log: WorkoutLog) => void;
+  deleteLog: (id: string) => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
   updateSettings: (settings: Settings) => void;
   addBodyWeight: (weight: number) => void;
@@ -123,6 +125,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const updateLog = useCallback((log: WorkoutLog) => {
+    setLogs((prev) => prev.map((l) => (l.id === log.id ? log : l)));
+  }, []);
+
+  const deleteLog = useCallback((id: string) => {
+    setLogs((prev) => prev.filter((l) => l.id !== id));
+    setProfile((prev) => ({
+      ...prev,
+      totalWorkouts: Math.max(0, prev.totalWorkouts - 1),
+    }));
+  }, []);
+
   const updateProfile = useCallback((updates: Partial<UserProfile>) => {
     setProfile((prev) => ({ ...prev, ...updates }));
   }, []);
@@ -208,7 +222,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       value={{
         exercises, workouts, logs, profile,
         addExercise, addWorkout, updateWorkout, deleteWorkout,
-        addLog, updateProfile, updateSettings, addBodyWeight,
+        addLog, updateLog, deleteLog, updateProfile, updateSettings, addBodyWeight,
         getExerciseById, checkAndUnlockAchievements, resetData, loaded,
       }}
     >
