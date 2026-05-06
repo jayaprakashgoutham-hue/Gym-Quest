@@ -1,56 +1,59 @@
-# GymQuest - Fitness Tracking App
+# GymQuest — Mobile-first gamified fitness tracking app with dark neon UI.
 
-## Overview
-
-GymQuest is a mobile-first gamified fitness tracking app built with Expo (React Native). It features a dark neon gaming aesthetic with 5 main tabs.
+## Run & Operate
+- `pnpm --filter @workspace/mobile run dev` — start Expo mobile app
+- `pnpm --filter @workspace/api-server run dev` — start API server
+- `pnpm run typecheck` — full typecheck across all packages
+- Expo URL: `exp://0e604486-be60-43b5-8e94-0d3f293fd6c9-00-s06m76ny57n5.expo.picard.replit.dev`
 
 ## Stack
+- **Monorepo**: pnpm workspaces, Node.js 24
+- **Mobile**: Expo 54 (React Native) + expo-router v6 (file-based routing)
+- **State**: AsyncStorage `@gymquest_data` + React Context (`store/AppContext.tsx`)
+- **Animations**: React Native `Animated` API (useNativeDriver: true, no transformOrigin)
+- **Gestures**: react-native-gesture-handler `Swipeable`
+- **API**: Express 5 + Drizzle ORM + PostgreSQL (not yet used by mobile)
 
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **Frontend**: Expo (React Native) with expo-router
-- **State**: AsyncStorage for persistence, React Context for shared state
-- **API framework**: Express 5 (shared API server, not used by mobile yet)
-- **Database**: PostgreSQL + Drizzle ORM (available but not used by mobile)
+## Where things live
+- `artifacts/mobile/` — Expo app root
+- `app/(tabs)/` — 5 main tabs: Workouts, Exercises, Logs, Stats, Profile
+- `app/exercise/[id].tsx` — exercise detail with animated demo + instructions
+- `app/workout/[id].tsx` — workout editor (create/edit/delete, exercise picker modal)
+- `app/log/[id].tsx` — log detail (view/edit sets/reps/weight, delete)
+- `app/active-workout.tsx` — live workout session with rest timer
+- `store/exerciseLibrary.ts` — 100 exercises with full metadata (source of truth, never stored)
+- `store/AppContext.tsx` — always merges exerciseLibrary + user custom exercises at load
+- `store/sampleData.ts` — empty defaults (workouts/logs start fresh)
+- `components/ExerciseDemo.tsx` — 14 movement-pattern animations (proper pivot math)
+- `components/SwipeableCard.tsx` — reusable swipe left/right gesture card
 
-## App Structure
+## Architecture decisions
+- **Exercise library never stored in AsyncStorage** — always loaded from `exerciseLibrary.ts`; only user-added custom exercises are persisted. This prevents stale data on library updates.
+- **Pivot animations without transformOrigin** — React Native doesn't support `transformOrigin`; pivots use `[translateY(-half), rotate, translateY(+half)]` transform chains.
+- **`useNativeDriver: true` for all animations** — all animated properties are transforms/opacity only, enabling 60fps on the JS thread.
+- **Swipeable wraps GlowCard** — `SwipeableCard` is layout-neutral; the inner `GlowCard` handles appearance.
+- **Exercises tab only reads from context** — exercise data comes from the library through context, so filters always have full 100 exercises.
 
-### Tabs
-1. **Workouts** (`app/(tabs)/index.tsx`) - Grouped workout routines with GO button
-2. **Exercises** (`app/(tabs)/exercises.tsx`) - Searchable exercise library (52+ exercises)
-3. **Logs** (`app/(tabs)/logs.tsx`) - Calendar view of completed workouts
-4. **Stats** (`app/(tabs)/stats.tsx`) - Volume, frequency, muscle group charts, body weight tracker, PRs
-5. **Profile** (`app/(tabs)/profile.tsx`) - XP, level, streak, achievements
+## Product
+- 100-exercise library with instructions, muscles, tips, movement patterns, animated demos
+- Create/edit/delete custom workout routines grouped by program
+- Log workouts with sets/reps/weight per exercise, duration, volume tracking
+- Calendar view of workout history with per-day drill-down
+- Stats: volume charts, muscle group breakdown, body weight tracker, personal records
+- Profile: XP/leveling, streaks, achievements
+- Settings: rest timer, weight units, RPE, 1RM/plate calculators
 
-### Screens
-- **Active Workout** (`app/active-workout.tsx`) - Live workout logging with rest timer
-- **Settings** (`app/settings.tsx`) - Rest timer, defaults, units, RPE, 1RM calculator, plate calculator
+## User preferences
+- Dark neon theme: bg #0a0a0a, cards #141414, accent purple/cyan/pink/lime
+- Font: Inter (400/500/600/700) via @expo-google-fonts
+- No sample data on fresh install — user creates their own workouts
 
-### Design
-- Background: #0a0a0a
-- Cards: #141414 with neon border glow
-- Accent colors: Purple (#a855f7), Cyan (#06b6d4), Pink (#f43f5e), Lime (#84cc16)
-- Font: Inter (400/500/600/700)
+## Gotchas
+- `useNativeDriver: true` and `false` cannot be mixed on the same `Animated.Value`
+- `transformOrigin` is not a React Native StyleSheet property — use translate-rotate-translate
+- Exercises must never be saved to AsyncStorage; the library is the source of truth
+- The Expo tunnel URL changes only if the Repl restarts from scratch
 
-### Data Layer
-- `store/types.ts` - TypeScript interfaces
-- `store/sampleData.ts` - Pre-loaded sample exercises, workouts, logs
-- `store/AppContext.tsx` - React Context with AsyncStorage persistence
-
-### Components
-- `components/GlowCard.tsx` - Card with neon border glow
-- `components/NeonButton.tsx` - Styled button with haptic feedback
-- `components/XPBar.tsx` - XP progress bar
-- `components/RestTimer.tsx` - Countdown rest timer
-
-## Key Commands
-
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
-
-See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+## Pointers
+- `.local/skills/expo` — Expo patterns, permissions, animations
+- `.local/skills/react-vite` — not used (mobile only)

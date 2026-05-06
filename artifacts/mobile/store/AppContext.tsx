@@ -1,7 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { sampleExercises, sampleWorkouts, sampleLogs, defaultProfile, defaultAchievements } from "./sampleData";
-import type { Exercise, Workout, WorkoutLog, UserProfile, AppState, Settings, LoggedExercise } from "./types";
+import { exerciseLibrary } from "./exerciseLibrary";
+import { sampleWorkouts, sampleLogs, defaultProfile, defaultAchievements } from "./sampleData";
+import type { Exercise, Workout, WorkoutLog, UserProfile, Settings, LoggedExercise } from "./types";
 
 interface AppContextType {
   exercises: Exercise[];
@@ -49,19 +50,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const data: AppState = JSON.parse(raw);
-        setExercises(data.exercises);
-        setWorkouts(data.workouts);
-        setLogs(data.logs);
-        setProfile(data.profile);
+        const data = JSON.parse(raw) as {
+          customExercises?: Exercise[];
+          exercises?: Exercise[];
+          workouts: Workout[];
+          logs: WorkoutLog[];
+          profile: UserProfile;
+        };
+        // Custom exercises are user-added ones (id > 1000 or not in library)
+        const libraryIds = new Set(exerciseLibrary.map((e) => e.id));
+        const customExercises = (data.customExercises ?? data.exercises ?? []).filter(
+          (e) => !libraryIds.has(e.id)
+        );
+        setExercises([...exerciseLibrary, ...customExercises]);
+        setWorkouts(data.workouts ?? []);
+        setLogs(data.logs ?? []);
+        setProfile(data.profile ?? defaultProfile);
       } else {
-        setExercises(sampleExercises);
+        setExercises(exerciseLibrary);
         setWorkouts(sampleWorkouts);
         setLogs(sampleLogs);
         setProfile(defaultProfile);
       }
     } catch {
-      setExercises(sampleExercises);
+      setExercises(exerciseLibrary);
       setWorkouts(sampleWorkouts);
       setLogs(sampleLogs);
       setProfile(defaultProfile);
@@ -71,7 +83,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const saveData = async () => {
     try {
-      const data: AppState = { exercises, workouts, logs, profile };
+      const libraryIds = new Set(exerciseLibrary.map((e) => e.id));
+      const customExercises = exercises.filter((e) => !libraryIds.has(e.id));
+      const data = { customExercises, workouts, logs, profile };
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {}
   };

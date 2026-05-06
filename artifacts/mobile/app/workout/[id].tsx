@@ -10,6 +10,7 @@ import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/store/AppContext";
 import { GlowCard } from "@/components/GlowCard";
 import { NeonButton } from "@/components/NeonButton";
+import { SwipeableCard } from "@/components/SwipeableCard";
 import type { Workout, WorkoutExercise } from "@/store/types";
 
 const CATEGORIES = ["All", "Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Cardio"];
@@ -204,61 +205,68 @@ export default function WorkoutEditorScreen() {
             const cat = getExCategory(ex.exerciseId);
             const accent = categoryColors[cat] || colors.purple;
             return (
-              <GlowCard key={`${ex.exerciseId}-${idx}`} glowColor={accent}>
-                <View style={styles.exHeader}>
-                  <Text style={[styles.exName, { color: colors.foreground }]} numberOfLines={1}>
-                    {idx + 1}. {getExName(ex.exerciseId)}
-                  </Text>
-                  <View style={styles.exActions}>
-                    <TouchableOpacity onPress={() => moveExercise(idx, -1)} disabled={idx === 0}>
-                      <Feather name="chevron-up" size={20} color={idx === 0 ? colors.border : colors.mutedForeground} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => moveExercise(idx, 1)} disabled={idx === workoutExercises.length - 1}>
-                      <Feather name="chevron-down" size={20} color={idx === workoutExercises.length - 1 ? colors.border : colors.mutedForeground} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => removeExercise(idx)}>
-                      <Feather name="trash-2" size={18} color={colors.pink} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                <View style={styles.fieldRow}>
-                  <View style={styles.field}>
-                    <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>SETS</Text>
-                    <TextInput
-                      style={[styles.smallInput, {
-                        backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border,
-                      }]}
-                      value={ex.sets.toString()}
-                      onChangeText={(v) => updateField(idx, "sets", v)}
-                      keyboardType="number-pad"
-                    />
-                  </View>
-                  <View style={styles.field}>
-                    <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>REPS</Text>
-                    <TextInput
-                      style={[styles.smallInput, {
-                        backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border,
-                      }]}
-                      value={ex.reps.toString()}
-                      onChangeText={(v) => updateField(idx, "reps", v)}
-                      keyboardType="number-pad"
-                    />
-                  </View>
-                  <View style={styles.field}>
-                    <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>
-                      {profile.weightUnit.toUpperCase()}
+              <SwipeableCard
+                key={`${ex.exerciseId}-${idx}`}
+                onDelete={() => removeExercise(idx)}
+                deleteLabel="Remove"
+                style={{ borderRadius: 16, borderWidth: 1, borderColor: accent + "30", marginBottom: 12 }}
+              >
+                <GlowCard glowColor={accent} style={{ marginBottom: 0 }}>
+                  <View style={styles.exHeader}>
+                    <Text style={[styles.exName, { color: colors.foreground }]} numberOfLines={1}>
+                      {idx + 1}. {getExName(ex.exerciseId)}
                     </Text>
-                    <TextInput
-                      style={[styles.smallInput, {
-                        backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border,
-                      }]}
-                      value={ex.weight.toString()}
-                      onChangeText={(v) => updateField(idx, "weight", v)}
-                      keyboardType="decimal-pad"
-                    />
+                    <View style={styles.exActions}>
+                      <TouchableOpacity onPress={() => moveExercise(idx, -1)} disabled={idx === 0}>
+                        <Feather name="chevron-up" size={20} color={idx === 0 ? colors.border : colors.mutedForeground} />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => moveExercise(idx, 1)} disabled={idx === workoutExercises.length - 1}>
+                        <Feather name="chevron-down" size={20} color={idx === workoutExercises.length - 1 ? colors.border : colors.mutedForeground} />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              </GlowCard>
+                  <View style={styles.fieldRow}>
+                    <View style={styles.field}>
+                      <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>SETS</Text>
+                      <TextInput
+                        style={[styles.smallInput, {
+                          backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border,
+                        }]}
+                        value={ex.sets.toString()}
+                        onChangeText={(v) => updateField(idx, "sets", v)}
+                        keyboardType="number-pad"
+                      />
+                    </View>
+                    <View style={styles.field}>
+                      <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>REPS</Text>
+                      <TextInput
+                        style={[styles.smallInput, {
+                          backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border,
+                        }]}
+                        value={ex.reps.toString()}
+                        onChangeText={(v) => updateField(idx, "reps", v)}
+                        keyboardType="number-pad"
+                      />
+                    </View>
+                    <View style={styles.field}>
+                      <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>
+                        {profile.weightUnit.toUpperCase()}
+                      </Text>
+                      <TextInput
+                        style={[styles.smallInput, {
+                          backgroundColor: colors.input, color: colors.foreground, borderColor: colors.border,
+                        }]}
+                        value={ex.weight.toString()}
+                        onChangeText={(v) => updateField(idx, "weight", v)}
+                        keyboardType="decimal-pad"
+                      />
+                    </View>
+                  </View>
+                  <Text style={[styles.swipeHint, { color: colors.mutedForeground }]}>
+                    ← swipe left to remove
+                  </Text>
+                </GlowCard>
+              </SwipeableCard>
             );
           })
         )}
@@ -385,6 +393,7 @@ const styles = StyleSheet.create({
   },
   addBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#fff" },
   empty: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center" as const, paddingVertical: 12 },
+  swipeHint: { fontSize: 10, fontFamily: "Inter_400Regular", marginTop: 8, opacity: 0.5 },
   exHeader: {
     flexDirection: "row" as const,
     justifyContent: "space-between" as const,

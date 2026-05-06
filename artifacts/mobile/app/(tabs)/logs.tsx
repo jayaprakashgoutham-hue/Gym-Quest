@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Alert } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/store/AppContext";
 import { GlowCard } from "@/components/GlowCard";
+import { SwipeableCard } from "@/components/SwipeableCard";
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate();
@@ -26,7 +27,7 @@ export default function LogsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { logs, exercises } = useApp();
+  const { logs, exercises, deleteLog } = useApp();
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -160,56 +161,78 @@ export default function LogsScreen() {
               </Text>
             ) : (
               selectedLogs.map((log) => (
-                <TouchableOpacity
+                <SwipeableCard
                   key={log.id}
-                  onPress={() => router.push({ pathname: "/log/[id]", params: { id: log.id } })}
-                  activeOpacity={0.8}
+                  onEdit={() => router.push({ pathname: "/log/[id]", params: { id: log.id } })}
+                  onDelete={() => {
+                    Alert.alert(
+                      "Delete log?",
+                      "This will permanently remove this workout from your history.",
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        { text: "Delete", style: "destructive", onPress: () => deleteLog(log.id) },
+                      ]
+                    );
+                  }}
+                  editLabel="View"
+                  deleteLabel="Delete"
+                  style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.pink + "30", marginBottom: 12 }}
                 >
-                  <GlowCard glowColor={colors.pink}>
-                    <View style={styles.logTitleRow}>
-                      <Text style={[styles.logWorkoutName, { color: colors.foreground }]}>
-                        {log.workoutName}
-                      </Text>
-                      <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
-                    </View>
-                    <View style={styles.logMeta}>
-                      <View style={styles.logStat}>
-                        <Feather name="clock" size={14} color={colors.cyan} />
-                        <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
-                          {log.duration} min
+                  <TouchableOpacity
+                    onPress={() => router.push({ pathname: "/log/[id]", params: { id: log.id } })}
+                    activeOpacity={0.85}
+                  >
+                    <GlowCard glowColor={colors.pink} style={{ marginBottom: 0 }}>
+                      <View style={styles.logTitleRow}>
+                        <Text style={[styles.logWorkoutName, { color: colors.foreground }]}>
+                          {log.workoutName}
+                        </Text>
+                        <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
+                      </View>
+                      <View style={styles.logMeta}>
+                        <View style={styles.logStat}>
+                          <Feather name="clock" size={14} color={colors.cyan} />
+                          <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
+                            {log.duration} min
+                          </Text>
+                        </View>
+                        <View style={styles.logStat}>
+                          <Feather name="activity" size={14} color={colors.lime} />
+                          <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
+                            {log.exercises.length} exercises
+                          </Text>
+                        </View>
+                        <View style={styles.logStat}>
+                          <Feather name="bar-chart-2" size={14} color={colors.pink} />
+                          <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
+                            {calcVolume(log).toLocaleString()} vol
+                          </Text>
+                        </View>
+                      </View>
+                      {log.exercises.slice(0, 3).map((ex, idx) => (
+                        <View key={idx} style={styles.logExercise}>
+                          <Text style={[styles.logExName, { color: colors.foreground }]}>
+                            {getExName(ex.exerciseId)}
+                          </Text>
+                          <Text style={[styles.logExDetail, { color: colors.mutedForeground }]}>
+                            {ex.sets.filter((s) => s.completed).length} sets
+                          </Text>
+                        </View>
+                      ))}
+                      {log.exercises.length > 3 && (
+                        <Text style={[styles.logExDetail, { color: colors.purple, marginTop: 2 }]}>
+                          +{log.exercises.length - 3} more exercises
+                        </Text>
+                      )}
+                      <View style={styles.editHint}>
+                        <Feather name="move-horizontal" size={11} color={colors.mutedForeground} />
+                        <Text style={[styles.editHintText, { color: colors.mutedForeground }]}>
+                          swipe right to view · swipe left to delete
                         </Text>
                       </View>
-                      <View style={styles.logStat}>
-                        <Feather name="activity" size={14} color={colors.lime} />
-                        <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
-                          {log.exercises.length} exercises
-                        </Text>
-                      </View>
-                      <View style={styles.logStat}>
-                        <Feather name="bar-chart-2" size={14} color={colors.pink} />
-                        <Text style={[styles.logStatText, { color: colors.mutedForeground }]}>
-                          {calcVolume(log).toLocaleString()} vol
-                        </Text>
-                      </View>
-                    </View>
-                    {log.exercises.map((ex, idx) => (
-                      <View key={idx} style={styles.logExercise}>
-                        <Text style={[styles.logExName, { color: colors.foreground }]}>
-                          {getExName(ex.exerciseId)}
-                        </Text>
-                        <Text style={[styles.logExDetail, { color: colors.mutedForeground }]}>
-                          {ex.sets.filter((s) => s.completed).length} sets completed
-                        </Text>
-                      </View>
-                    ))}
-                    <View style={styles.editHint}>
-                      <Feather name="edit-2" size={11} color={colors.mutedForeground} />
-                      <Text style={[styles.editHintText, { color: colors.mutedForeground }]}>
-                        Tap to edit or delete
-                      </Text>
-                    </View>
-                  </GlowCard>
-                </TouchableOpacity>
+                    </GlowCard>
+                  </TouchableOpacity>
+                </SwipeableCard>
               ))
             )}
           </View>
