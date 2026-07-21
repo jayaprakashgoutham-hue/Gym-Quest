@@ -22,6 +22,8 @@ interface AppContextType {
   getExerciseById: (id: string) => Exercise | undefined;
   checkAndUnlockAchievements: (log: WorkoutLog) => string[];
   resetData: () => void;
+  importLogs: (newLogs: WorkoutLog[]) => void;
+  importWorkouts: (newWorkouts: Workout[]) => void;
   loaded: boolean;
 }
 
@@ -57,7 +59,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           logs: WorkoutLog[];
           profile: UserProfile;
         };
-        // Custom exercises are user-added ones (id > 1000 or not in library)
         const libraryIds = new Set(exerciseLibrary.map((e) => e.id));
         const customExercises = (data.customExercises ?? data.exercises ?? []).filter(
           (e) => !libraryIds.has(e.id)
@@ -132,9 +133,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
     setWorkouts((prev) =>
       prev.map((w) =>
-        w.id === log.workoutId
-          ? { ...w, lastCompleted: log.date }
-          : w
+        w.id === log.workoutId ? { ...w, lastCompleted: log.date } : w
       )
     );
   }, []);
@@ -231,13 +230,40 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  // Bulk-import logs from external sources (FitNotes, etc.)
+  // Deduplicates by id; updates totalWorkouts count; does NOT award XP/streaks
+  // for historical data to keep stats honest.
+  const importLogs = useCallback((newLogs: WorkoutLog[]) => {
+    setLogs((prev) => {
+      const existingIds = new Set(prev.map((l) => l.id));
+      const fresh = newLogs.filter((l) => !existingIds.has(l.id));
+      return [...fresh, ...prev].sort((a, b) => b.date.localeCompare(a.date));
+    });
+    setProfile((prev) => ({
+      ...prev,
+      totalWorkouts: prev.totalWorkouts + newLogs.length,
+    }));
+  }, []);
+
+  // Bulk-import workout routines from external sources (PDF plans, etc.)
+  // Deduplicates by name+groupName; keeps existing workouts intact.
+  const importWorkouts = useCallback((newWorkouts: Workout[]) => {
+    setWorkouts((prev) => {
+      const existingKeys = new Set(prev.map((w) => `${w.groupName}::${w.name}`));
+      const fresh = newWorkouts.filter((w) => !existingKeys.has(`${w.groupName}::${w.name}`));
+      return [...prev, ...fresh];
+    });
+  }, []);
+
   return (
     <AppContext.Provider
       value={{
         exercises, workouts, logs, profile,
         addExercise, addWorkout, updateWorkout, deleteWorkout,
         addLog, updateLog, deleteLog, updateProfile, updateSettings, addBodyWeight,
-        getExerciseById, checkAndUnlockAchievements, resetData, loaded,
+        getExerciseById, checkAndUnlockAchievements, resetData,
+        importLogs, importWorkouts,
+        loaded,
       }}
     >
       {children}

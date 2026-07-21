@@ -84,6 +84,8 @@ async function buildAll() {
       "odbc",
       "piscina",
       "realm",
+      "pdfjs-dist",
+      "pdf-parse",
       "ref-napi",
       "rocksdb",
       "sass-embedded",

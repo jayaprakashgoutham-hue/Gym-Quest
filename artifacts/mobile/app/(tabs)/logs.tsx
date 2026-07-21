@@ -225,7 +225,7 @@ export default function LogsScreen() {
                         </Text>
                       )}
                       <View style={styles.editHint}>
-                        <Feather name="move-horizontal" size={11} color={colors.mutedForeground} />
+                        <Feather name="more-horizontal" size={11} color={colors.mutedForeground} />
                         <Text style={[styles.editHintText, { color: colors.mutedForeground }]}>
                           swipe right to view · swipe left to delete
                         </Text>

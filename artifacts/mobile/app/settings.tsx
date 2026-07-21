@@ -201,6 +201,37 @@ export default function SettingsScreen() {
 
         <NeonButton title="Save Settings" onPress={handleSave} color={colors.purple} style={{ marginTop: 8 }} />
 
+        {/* ── Import Data ── */}
+        <GlowCard glowColor={colors.cyan} style={{ marginTop: 16 }}>
+          <Text style={[styles.sectionTitle, { color: colors.cyan }]}>Import Data</Text>
+          <TouchableOpacity
+            style={[styles.toolBtn, { backgroundColor: colors.input }]}
+            onPress={() => router.push("/import-data")}
+          >
+            <Feather name="upload" size={18} color={colors.cyan} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.toolText, { color: colors.foreground }]}>Import Workout History</Text>
+              <Text style={{ fontSize: 12, fontFamily: "Inter_400Regular", color: colors.mutedForeground }}>
+                Import logs from FitNotes (.realm backup)
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={16} color={colors.mutedForeground} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.toolBtn, { backgroundColor: colors.input }]}
+            onPress={() => router.push("/import-data")}
+          >
+            <Feather name="file-text" size={18} color={colors.purple} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.toolText, { color: colors.foreground }]}>Import Workout Plan</Text>
+              <Text style={{ fontSize: 12, fontFamily: "Inter_400Regular", color: colors.mutedForeground }}>
+                Convert any PDF program into routines
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={16} color={colors.mutedForeground} />
+          </TouchableOpacity>
+        </GlowCard>
+
         <GlowCard glowColor={colors.pink} style={{ marginTop: 16 }}>
           <Text style={[styles.sectionTitle, { color: colors.pink }]}>Danger Zone</Text>
           <Text style={[styles.dangerHint, { color: colors.mutedForeground }]}>
